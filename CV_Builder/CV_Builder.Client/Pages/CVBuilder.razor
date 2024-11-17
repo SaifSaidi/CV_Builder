@@ -1,0 +1,246 @@
+﻿
+@rendermode InteractiveWebAssembly 
+<PageTitle>CV Builder </PageTitle>
+ 
+@using CV_Builder.Client.Models
+@using System.Text
+@inject IJSRuntime JSRuntime
+
+<div class="p-4 container mx-auto">
+    <section class="gap-x-2 flex w-full sm:flex-column lg:flex-row">
+        <div>
+            <div class="space-y-6">
+                <div class="bg-white overflow-hidden rounded-lg shadow-md">
+                    <div class="px-4 py-5 border-gray-200 border-b sm:px-6">
+                        <h3 class="text-gray-900 text-lg font-medium leading-6">Personal Information</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
+                            <div>
+                                <label for="name" class="text-gray-700 block text-sm font-medium">Name</label>
+                                <input id="name" class="mt-1 border-gray-300 block w-full rounded-md shadow-sm" @bind="cv.PersonalInfo.Name" />
+                            </div>
+                            <div>
+                                <label for="email" class="text-gray-700 block text-sm font-medium">Email</label>
+                                <input id="email" type="email" class="mt-1 border-gray-300 block w-full rounded-md shadow-sm" @bind="cv.PersonalInfo.Email" />
+                            </div>
+                            <div>
+                                <label for="phone" class="text-gray-700 block text-sm font-medium">Phone</label>
+                                <input id="phone" type="tel" class="mt-1 border-gray-300 block w-full rounded-md shadow-sm" @bind="cv.PersonalInfo.Phone" />
+                            </div>
+                            <div>
+                                <label for="location" class="text-gray-700 block text-sm font-medium">Location</label>
+                                <input id="location" class="mt-1 border-gray-300 block w-full rounded-md shadow-sm" @bind="cv.PersonalInfo.Location" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden rounded-lg shadow-md">
+                    <div class="px-4 py-5 border-gray-200 border-b sm:px-6">
+                        <h3 class="text-gray-900 text-lg font-medium leading-6">Professional Summary</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        <textarea contenteditable="true" rows="4" class="mt-1 border-gray-300 block w-full rounded-md shadow-sm" @bind="cv.Summary"></textarea>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden rounded-lg shadow-md">
+                    <div class="px-4 py-5 border-gray-200 border-b sm:px-6">
+                        <h3 class="text-gray-900 text-lg font-medium leading-6">Work Experience</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        @foreach (var exp in cv.Experiences)
+                        {
+                            <div class="mb-4 p-4 rounded border">
+                                <input class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Company" @bind="exp.Company" />
+                                <input class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Position" @bind="exp.Position" />
+                                <div class="gap-2 mb-2 grid grid-cols-2">
+                                    <input type="date" class="border-gray-300 block w-full rounded-md shadow-sm" placeholder="Start Date" @bind="exp.StartDate" />
+                                    <input type="date" class="border-gray-300 block w-full rounded-md shadow-sm" placeholder="End Date" @bind="exp.EndDate" />
+                                </div>
+                                <textarea class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Description" @bind="exp.Description"></textarea>
+                                <button class="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700" @onclick="() => RemoveExperience(exp)">Remove</button>
+                            </div>
+                        }
+                        <button class="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700" @onclick="AddExperience">Add Experience</button>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden rounded-lg shadow-md">
+                    <div class="px-4 py-5 border-gray-200 border-b sm:px-6">
+                        <h3 class="text-gray-900 text-lg font-medium leading-6">Education</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        @foreach (var edu in cv.Education)
+                        {
+                            <div class="mb-4 p-4 rounded border">
+                                <input class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Institution" @bind="edu.Institution" />
+                                <input class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Degree" @bind="edu.Degree" />
+                                <input type="date" class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Graduation Date" @bind="edu.GraduationDate" />
+                                <button class="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700" @onclick="() => RemoveEducation(edu)">Remove</button>
+                            </div>
+                        }
+                        <button class="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700" @onclick="AddEducation">Add Education</button>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden rounded-lg shadow-md">
+                    <div class="px-4 py-5 border-gray-200 border-b sm:px-6">
+                        <h3 class="text-gray-900 text-lg font-medium leading-6">Skills</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="gap-2 mb-4 flex flex-wrap">
+                            @foreach (var skill in cv.Skills)
+                            {
+                                <div class="bg-gray-200 px-2 py-1 flex items-center rounded-full">
+                                    @skill
+                                    <button class="ml-2 text-red-500" @onclick="() => RemoveSkill(skill)">
+                                        <span class="sr-only">Remove skill</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                        <div class="gap-2 flex">
+                            <input @bind="newSkill" @onkeypress="AddSkillOnEnter" class="border-gray-300 flex-grow rounded-md shadow-sm" placeholder="Add a skill" />
+                            <button class="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700" @onclick="AddSkill">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden rounded-lg shadow-md">
+                    <div class="px-4 py-5 border-gray-200 border-b sm:px-6">
+                        <h3 class="text-gray-900 text-lg font-medium leading-6">Projects</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        @foreach (var project in cv.Projects)
+                        {
+                            <div class="mb-4 p-4 rounded border">
+                                <input class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Project Name" @bind="project.Name" />
+                                <textarea class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Description" @bind="project.Description"></textarea>
+                                <input class="mb-2 border-gray-300 block w-full rounded-md shadow-sm" placeholder="Technologies Used" @bind="project.Technologies" />
+                                <button class="bg-red-500 text-white py-2 px-4 rounded font-bold hover:bg-red-700" @onclick="() => RemoveProject(project)">Remove</button>
+                            </div>
+                        }
+                        <button class="bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700" @onclick="AddProject">Add Project</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w-full shrink grow">
+            <div id="cv-preview" class="bg-white p-8 shadow-lg">
+                <h2 class="mb-2 text-3xl font-bold">@cv.PersonalInfo.Name</h2>
+                <p class="text-gray-600 mb-4">@cv.PersonalInfo.Email | @cv.PersonalInfo.Phone | @cv.PersonalInfo.Location</p>
+
+                <h3 class="mb-2 text-xl font-semibold">Professional Summary</h3>
+                <p class="mb-4">@cv.Summary</p>
+
+                <h3 class="mb-2 text-xl font-semibold">Work Experience</h3>
+                @foreach (var exp in cv.Experiences)
+                {
+                    <div class="mb-4">
+                        <h4 class="font-semibold">@exp.Position at @exp.Company</h4>
+                        <p class="text-gray-600">@exp.StartDate.ToString("MMM yyyy") - @exp.EndDate.ToString("MMM yyyy")</p>
+                        <p>@exp.Description</p>
+                    </div>
+                }
+
+                <h3 class="mb-2 text-xl font-semibold">Education</h3>
+                @foreach (var edu in cv.Education)
+                {
+                    <div class="mb-2">
+                        <h4 class="font-semibold">@edu.Degree</h4>
+                        <p>@edu.Institution, @edu.GraduationDate.ToString("MMM yyyy")</p>
+                    </div>
+                }
+
+                <h3 class="mb-2 text-xl font-semibold">Skills</h3>
+                <div class="gap-2 mb-4 flex flex-wrap">
+                    @foreach (var skill in cv.Skills)
+                    {
+                        <span class="bg-gray-200 px-2 py-1 rounded-full text-sm">@skill</span>
+                    }
+                </div>
+
+                <h3 class="mb-2 text-xl font-semibold">Projects</h3>
+                @foreach (var project in cv.Projects)
+                {
+                    <div class="mb-4">
+                        <h4 class="font-semibold">@project.Name</h4>
+                        <p>@project.Description</p>
+                        <p class="text-gray-600">Technologies: @project.Technologies</p>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </section>
+</div>
+
+
+
+@code {
+
+    private CV cv = new CV();
+    private string newSkill = "";
+
+
+    private void AddExperience()
+    {
+        cv.Experiences.Add(new Experience());
+    }
+
+    private void RemoveExperience(Experience exp)
+    {
+        cv.Experiences.Remove(exp);
+    }
+
+    private void AddEducation()
+    {
+        cv.Education.Add(new Education());
+    }
+
+    private void RemoveEducation(Education edu)
+    {
+        cv.Education.Remove(edu);
+    }
+
+    private void AddSkill()
+    {
+        if (!string.IsNullOrWhiteSpace(newSkill) && !cv.Skills.Contains(newSkill))
+        {
+            cv.Skills.Add(newSkill);
+            newSkill = "";
+        }
+    }
+
+    private void AddSkillOnEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            AddSkill();
+        }
+    }
+
+    private void RemoveSkill(string skill)
+    {
+        cv.Skills.Remove(skill);
+    }
+
+    private void AddProject()
+    {
+        cv.Projects.Add(new Project());
+    }
+
+    private void RemoveProject(Project project)
+    {
+        cv.Projects.Remove(project);
+    }
+}
+
+
+
+
